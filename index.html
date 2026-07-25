@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>BSA Velocidade — App do Professor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --pitch-900:#0B4530;--pitch-800:#0F5C3D;--pitch-700:#14724F;
+    --chalk-100:#F6F8F4;--chalk-200:#E4EFE8;--chalk-300:#DCE5DD;
+    --lime-500:#FFC800;--lime-600:#E6B400;--amber-500:#E8A33D;--amber-700:#8A5A1E;
+    --clay-500:#FF5A36;--clay-700:#B23A20;
+    --ink-700:#142B20;--line:#DCE5DD;
+    --font-display:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+  input{user-select:text;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--pitch-900);color:var(--ink-700);font-family:var(--font-body);line-height:1.5;min-height:100vh;padding-bottom:calc(30px + env(safe-area-inset-bottom));}
+  .shell{max-width:440px;margin:0 auto;background:var(--chalk-100);min-height:100vh;display:flex;flex-direction:column;}
+  header.bar{background:var(--pitch-800);color:var(--chalk-100);padding:16px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;}
+  header.bar .back{background:none;border:none;color:var(--chalk-100);font-size:22px;line-height:1;cursor:pointer;padding:4px 6px 4px 0;display:none;}
+  header.bar .back.show{display:block;}
+  header.bar .htext{flex:1;min-width:0;}
+  header.bar h1{font-family:var(--font-display);font-weight:600;font-size:18px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  header.bar p{font-size:11.5px;color:var(--chalk-300);margin:1px 0 0;}
+  main{flex:1;padding:20px 18px 40px;}
+  .btn{display:block;width:100%;font-family:var(--font-display);font-weight:600;font-size:15.5px;border-radius:10px;border:none;cursor:pointer;padding:16px;text-align:center;}
+  .btn-primary{background:var(--lime-500);color:var(--pitch-900);}
+  .btn-primary:active{background:var(--lime-600);}
+  .btn-secondary{background:#fff;color:var(--pitch-800);border:1px solid var(--line);}
+  .btn-danger-ghost{background:none;color:var(--clay-700);border:1px solid #FFC2B0;}
+  .btn[disabled]{opacity:0.4;pointer-events:none;}
+
+  .section-label{font-family:var(--font-mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8a8a80;margin:0 0 10px;}
+  .empty-state{text-align:center;padding:50px 10px;color:#8a8a80;}
+
+  .search-wrap{margin-bottom:14px;}
+  .search-wrap input{width:100%;font-size:16px;padding:13px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink-700);font-family:var(--font-body);}
+
+  .student-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;}
+  .avatar{width:42px;height:42px;border-radius:50%;background:var(--pitch-800);color:var(--lime-500);font-family:var(--font-display);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .avatar.lg{width:52px;height:52px;font-size:18px;}
+  .student-info{flex:1;min-width:0;}
+  .student-name{font-family:var(--font-display);font-weight:600;font-size:15.5px;margin:0;color:var(--ink-700);}
+  .student-sub{font-size:11.5px;color:#8a8a80;margin:2px 0 0;}
+
+  .eval-student-pill{display:flex;align-items:center;gap:10px;margin-bottom:16px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;}
+  .eval-student-pill .info{flex:1;min-width:0;}
+  .eval-student-pill .name{font-family:var(--font-display);font-weight:600;font-size:14.5px;}
+  .eval-student-pill a{font-family:var(--font-mono);font-size:11px;color:var(--pitch-700);text-decoration:none;flex-shrink:0;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;color:#6c6c62;font-family:var(--font-mono);margin-bottom:6px;}
+  .field input[type=number]{width:100%;font-family:var(--font-mono);font-weight:700;font-size:20px;padding:14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--pitch-800);text-align:center;}
+  .field input:focus{outline:2px solid var(--lime-600);border-color:transparent;}
+
+  .cam-wrap{position:relative;background:#000;border-radius:14px;overflow:hidden;margin-bottom:14px;aspect-ratio:4/3;}
+  .cam-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
+  .cam-off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--chalk-300);font-family:var(--font-mono);font-size:12.5px;text-align:center;padding:20px;}
+  .gate-line{position:absolute;top:0;bottom:0;width:3px;background:var(--lime-500);opacity:0.9;}
+  .gate-line .tag{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:var(--lime-500);color:var(--pitch-900);font-family:var(--font-mono);font-weight:700;font-size:10px;padding:2px 6px;border-radius:6px;white-space:nowrap;}
+  .gate-line.hit{background:var(--clay-500);}
+  .gate-line.hit .tag{background:var(--clay-500);color:#fff;}
+  .gate-line .grab{position:absolute;top:0;bottom:0;left:-16px;right:-16px;}
+
+  .mode-toggle{display:flex;gap:8px;margin-bottom:14px;}
+  .mode-btn{flex:1;font-family:var(--font-mono);font-size:11.5px;padding:9px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:#6c6c62;cursor:pointer;text-align:center;}
+  .mode-btn.active{background:var(--pitch-800);border-color:var(--pitch-800);color:var(--lime-500);}
+  .auto-note{font-size:11.5px;color:#8a8a80;background:var(--chalk-200);border-radius:10px;padding:10px 12px;margin-bottom:14px;}
+
+  .stopwatch-card{background:var(--pitch-800);border-radius:14px;padding:18px;text-align:center;margin-bottom:14px;}
+  .stopwatch-status{font-family:var(--font-mono);font-size:12px;color:var(--chalk-300);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
+  .stopwatch-time{font-family:var(--font-mono);font-weight:700;font-size:38px;color:var(--lime-500);line-height:1;}
+  .gate-btn{width:100%;font-family:var(--font-display);font-weight:700;font-size:17px;border:none;border-radius:12px;padding:20px;cursor:pointer;margin-top:14px;}
+  .gate-btn.largada{background:var(--lime-500);color:var(--pitch-900);}
+  .gate-btn.chegada{background:var(--clay-500);color:#fff;}
+  .gate-btn:active{opacity:0.85;}
+
+  .result-card{background:#fff;border:2px solid var(--lime-500);border-radius:16px;padding:24px 18px;text-align:center;margin-bottom:14px;}
+  .result-value{font-family:var(--font-display);font-weight:800;font-size:44px;color:var(--pitch-800);line-height:1;}
+  .result-unit{font-family:var(--font-mono);font-size:13px;color:#8a8a80;margin-top:4px;}
+  .result-sub{font-size:12px;color:#8a8a80;margin-top:8px;}
+
+  .history-item{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;}
+  .history-item .v{font-family:var(--font-mono);font-weight:700;font-size:16px;color:var(--pitch-800);}
+  .history-item .d{font-size:11.5px;color:#8a8a80;}
+  .history-best{color:var(--lime-600);}
+
+  .row-gap{display:flex;gap:10px;margin-top:10px;}
+  .row-gap .btn{flex:1;}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--pitch-900);color:#fff;font-size:13px;padding:12px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:all 0.25s;max-width:88vw;text-align:center;z-index:20;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="bar">
+    <button class="back" id="backBtn" onclick="goBack()">‹</button>
+    <div class="htext">
+      <h1 id="headerTitle">BSA Velocidade</h1>
+      <p id="headerSub">Cronômetro de sprint por câmera</p>
+    </div>
+  </header>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+(function(){
+
+var firebaseConfig = {
+  apiKey: "AIzaSyDmM2m_QnEeRflAKCyb11TzOrZM7iVgLCA",
+  authDomain: "bsa-app-493c3.firebaseapp.com",
+  projectId: "bsa-app-493c3",
+  storageBucket: "bsa-app-493c3.firebasestorage.app",
+  messagingSenderId: "455452879388",
+  appId: "1:455452879388:web:7135d93c116b2fe7cfcdd9"
+};
+var db = null;
+function initFirebase(){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    var auth = firebase.auth();
+    auth.signInAnonymously().catch(function(){});
+    auth.onAuthStateChanged(function(user){
+      if(user) loadStudents().then(boot).catch(boot);
+    });
+  }catch(e){ boot(); }
+}
+
+var state = {
+  screen:'loading', students:[], currentStudentId:null,
+  lastDistance:'', mode:'manual',
+  gateAx:18, gateBx:82,
+  running:false, phase:'idle', tStart:null, tEnd:null,
+  lastResult:null, stream:null, rafId:null,
+  prevFrame:null, cooldownUntil:0
+};
+
+function uid(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function initials(name){
+  var parts = name.trim().split(/\s+/);
+  var a = parts[0] ? parts[0][0] : '';
+  var b = parts.length>1 ? parts[parts.length-1][0] : '';
+  return (a+b).toUpperCase();
+}
+function fmtDate(ts){
+  var d = ts && ts.toDate ? ts.toDate() : new Date();
+  var dd = String(d.getDate()).padStart(2,'0');
+  var mm = String(d.getMonth()+1).padStart(2,'0');
+  return dd+'/'+mm;
+}
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+function avatarHtml(student, extraClass){
+  var cls = 'avatar' + (extraClass ? ' '+extraClass : '');
+  if(student && student.photo) return '<div class="'+cls+'"><img src="'+student.photo+'" alt=""></div>';
+  return '<div class="'+cls+'">'+(student?initials(student.name):'?')+'</div>';
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
+}
+function getStudent(id){
+  for(var i=0;i<state.students.length;i++){ if(state.students[i].id===id) return state.students[i]; }
+  return null;
+}
+
+/* ---------- data ---------- */
+async function loadStudents(){
+  try{
+    if(!db){ state.students = []; return; }
+    var alunosSnap = await db.collection('alunos').get();
+    var medSnap = await db.collection('medicoesVelocidade').get();
+    var porAluno = {};
+    medSnap.forEach(function(doc){
+      var d = doc.data();
+      if(!porAluno[d.alunoId]) porAluno[d.alunoId] = [];
+      porAluno[d.alunoId].push(d);
+    });
+    var lista = [];
+    alunosSnap.forEach(function(doc){
+      var d = doc.data();
+      if(d.statusGeral === 'inativo') return;
+      var meds = (porAluno[doc.id] || []).slice().sort(function(a,b){
+        var ta = a.criadoEm && a.criadoEm.toMillis ? a.criadoEm.toMillis() : 0;
+        var tb = b.criadoEm && b.criadoEm.toMillis ? b.criadoEm.toMillis() : 0;
+        return ta - tb;
+      });
+      lista.push({
+        id: doc.id, name: d.nome || '(sem nome)', photo: d.foto || null,
+        unidade: d.unidade || '', medicoes: meds
+      });
+    });
+    lista.sort(function(a,b){ return a.name.localeCompare(b.name); });
+    state.students = lista;
+  }catch(e){ state.students = []; }
+}
+async function salvarMedicao(s, ev){
+  try{
+    if(!db) throw new Error('sem conexão');
+    var docRef = await db.collection('medicoesVelocidade').add(Object.assign(
+      {alunoId: s.id, nome: s.name, unidade: s.unidade||''},
+      ev,
+      {criadoEm: firebase.firestore.FieldValue.serverTimestamp()}
+    ));
+    s.medicoes.push(Object.assign({alunoId:s.id, nome:s.name, unidade:s.unidade||''}, ev, {criadoEm:{toMillis:function(){return Date.now();}, toDate:function(){return new Date();}}}));
+    showToast('Salvo no histórico de '+s.name.split(' ')[0]+'.');
+  }catch(e){
+    showToast('Não deu pra salvar agora — sem conexão.');
+  }
+}
+
+/* ---------- speech ---------- */
+function falarVelocidade(kmh){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    var texto = kmh.toFixed(1).replace('.', ',') + ' quilômetros por hora';
+    var u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'pt-BR';
+    u.rate = 0.95;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- camera ---------- */
+async function startCamera(){
+  var video = document.getElementById('camVideo');
+  if(!video) return;
+  try{
+    var stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:960} },
+      audio:false
+    });
+    state.stream = stream;
+    video.srcObject = stream;
+    await video.play().catch(function(){});
+    document.getElementById('camOff') && (document.getElementById('camOff').style.display='none');
+    if(state.mode === 'auto') startAutoLoop();
+  }catch(e){
+    var off = document.getElementById('camOff');
+    if(off){ off.style.display='flex'; off.textContent = 'Não consegui acessar a câmera. Toque para permitir o acesso, ou use o cronômetro manual mesmo assim.'; }
+  }
+}
+function stopCamera(){
+  if(state.rafId) cancelAnimationFrame(state.rafId);
+  state.rafId = null;
+  if(state.stream){
+    state.stream.getTracks().forEach(function(t){ t.stop(); });
+    state.stream = null;
+  }
+}
+
+function startAutoLoop(){
+  var video = document.getElementById('camVideo');
+  var canvas = document.getElementById('camCanvas');
+  if(!video || !canvas) return;
+  var W = 96, H = 72;
+  canvas.width = W; canvas.height = H;
+  var ctx = canvas.getContext('2d', {willReadFrequently:true});
+  state.prevFrame = null;
+  function loop(){
+    if(state.mode !== 'auto' || !state.stream){ state.rafId = null; return; }
+    try{
+      ctx.drawImage(video, 0, 0, W, H);
+      var frame = ctx.getImageData(0,0,W,H).data;
+      if(state.prevFrame){
+        checkGate('A', state.gateAx, frame, state.prevFrame, W, H);
+        checkGate('B', state.gateBx, frame, state.prevFrame, W, H);
+      }
+      state.prevFrame = frame;
+    }catch(e){}
+    state.rafId = requestAnimationFrame(loop);
+  }
+  state.rafId = requestAnimationFrame(loop);
+}
+function checkGate(which, xPct, frame, prev, W, H){
+  var cx = Math.round(W * xPct/100);
+  var band = Math.max(2, Math.round(W*0.05));
+  var x0 = Math.max(0, cx-band), x1 = Math.min(W-1, cx+band);
+  var diffSum = 0, count = 0;
+  for(var y=0;y<H;y+=2){
+    for(var x=x0;x<=x1;x++){
+      var i = (y*W+x)*4;
+      var d = Math.abs(frame[i]-prev[i]) + Math.abs(frame[i+1]-prev[i+1]) + Math.abs(frame[i+2]-prev[i+2]);
+      diffSum += d; count++;
+    }
+  }
+  var avgDiff = count ? diffSum/count : 0;
+  var THRESHOLD = 34;
+  if(avgDiff > THRESHOLD){
+    onGateTriggered(which === 'A' ? 'largada' : 'chegada', 'auto');
+  }
+}
+
+/* ---------- stopwatch logic ---------- */
+function onGateTriggered(kind, source){
+  var now = performance.now();
+  if(now < state.cooldownUntil) return;
+  if(kind === 'largada'){
+    if(state.phase !== 'aguardando_largada') return;
+    state.tStart = now;
+    state.phase = 'aguardando_chegada';
+    state.cooldownUntil = now + 400;
+    flashGate('gateLineA');
+    renderStopwatch();
+    tickTimer();
+  } else {
+    if(state.phase !== 'aguardando_chegada') return;
+    var elapsedMs = now - state.tStart;
+    if(elapsedMs < 200) return; // debounce falso positivo
+    state.tEnd = now;
+    state.phase = 'concluido';
+    state.cooldownUntil = now + 99999999;
+    flashGate('gateLineB');
+    finishRun();
+  }
+}
+function flashGate(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('hit');
+  setTimeout(function(){ el.classList.remove('hit'); }, 350);
+}
+var timerInterval = null;
+function tickTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(function(){
+    if(state.phase !== 'aguardando_chegada'){ clearInterval(timerInterval); return; }
+    var el = document.getElementById('swTime');
+    if(el) el.textContent = ((performance.now()-state.tStart)/1000).toFixed(2)+'s';
+  }, 50);
+}
+function finishRun(){
+  clearInterval(timerInterval);
+  var dist = parseFloat(state.lastDistance);
+  var elapsedS = (state.tEnd - state.tStart)/1000;
+  var kmh = (dist / elapsedS) * 3.6;
+  state.lastResult = {distanciaM: dist, tempoS: Math.round(elapsedS*100)/100, velocidadeKmh: Math.round(kmh*10)/10, metodo: state.mode};
+  falarVelocidade(kmh);
+  render();
+}
+function resetRun(){
+  state.phase = 'aguardando_largada';
+  state.tStart = null; state.tEnd = null; state.lastResult = null;
+  state.cooldownUntil = 0;
+  render();
+}
+
+/* ---------- render ---------- */
+function goBack(){
+  if(state.screen === 'medir'){ stopCamera(); state.screen = 'home'; state.currentStudentId = null; }
+  else if(state.screen === 'historico'){ state.screen = 'medir'; }
+  render();
+}
+function setHeader(title, sub, showBack){
+  document.getElementById('headerTitle').textContent = title;
+  document.getElementById('headerSub').textContent = sub;
+  var back = document.getElementById('backBtn');
+  if(showBack){ back.classList.add('show'); } else { back.classList.remove('show'); }
+}
+function boot(){
+  state.screen = state.screen === 'loading' ? 'home' : state.screen;
+  render();
+}
+function render(){
+  var main = document.getElementById('main');
+  if(state.screen === 'loading'){
+    setHeader('BSA Velocidade','Carregando…', false);
+    main.innerHTML = '<div class="empty-state">Carregando alunos…</div>';
+    return;
+  }
+  if(state.screen === 'home') return renderHome(main);
+  if(state.screen === 'medir') return renderMedir(main);
+  if(state.screen === 'historico') return renderHistorico(main);
+}
+
+function renderHome(main){
+  setHeader('BSA Velocidade','Escolha o aluno para medir', false);
+  var q = (document.getElementById('searchInput') && document.getElementById('searchInput').value || '').toLowerCase();
+  var list = state.students.filter(function(s){ return !q || s.name.toLowerCase().indexOf(q) > -1; });
+  var html = '<div class="search-wrap"><input id="searchInput" type="text" placeholder="Buscar aluno…" oninput="renderHome(document.getElementById(\'main\'))" value="'+escapeHtml(document.getElementById('searchInput')?document.getElementById('searchInput').value:'')+'"></div>';
+  if(!list.length){
+    html += '<div class="empty-state">Nenhum aluno encontrado.</div>';
+  } else {
+    html += '<div class="section-label">Alunos ('+list.length+')</div>';
+    list.forEach(function(s){
+      var ultima = s.medicoes.length ? s.medicoes[s.medicoes.length-1] : null;
+      html += '<div class="student-card" onclick="openMedir(\''+s.id+'\')">'
+        + avatarHtml(s)
+        + '<div class="student-info"><p class="student-name">'+escapeHtml(s.name)+'</p>'
+        + '<p class="student-sub">'+(ultima ? 'Última: '+ultima.velocidadeKmh+' km/h' : 'Sem medições ainda')+'</p></div>'
+        + '</div>';
+    });
+  }
+  main.innerHTML = html;
+  var input = document.getElementById('searchInput');
+  if(input){ var v = input.value; input.focus(); input.setSelectionRange(v.length, v.length); }
+}
+window.renderHome = function(){ renderHome(document.getElementById('main')); };
+
+function openMedir(id){
+  state.currentStudentId = id;
+  state.screen = 'medir';
+  state.phase = 'aguardando_largada';
+  state.tStart = null; state.tEnd = null; state.lastResult = null;
+  render();
+}
+window.openMedir = openMedir;
+
+function renderMedir(main){
+  var s = getStudent(state.currentStudentId);
+  if(!s){ state.screen = 'home'; return render(); }
+  setHeader(s.name.split(' ')[0], 'Medição de velocidade', true);
+
+  var html = '<div class="eval-student-pill">'
+    + avatarHtml(s, 'lg')
+    + '<div class="info"><div class="name">'+escapeHtml(s.name)+'</div></div>'
+    + '<a onclick="openHistorico()">Histórico ›</a>'
+    + '</div>';
+
+  html += '<div class="field"><label>Distância entre os pontos (metros)</label>'
+    + '<input type="number" inputmode="decimal" id="distInput" value="'+escapeHtml(state.lastDistance)+'" placeholder="ex: 20" oninput="onDistChange(this.value)"></div>';
+
+  html += '<div class="mode-toggle">'
+    + '<div class="mode-btn'+(state.mode==='manual'?' active':'')+'" onclick="setMode(\'manual\')">Cronômetro manual</div>'
+    + '<div class="mode-btn'+(state.mode==='auto'?' active':'')+'" onclick="setMode(\'auto\')">Detecção automática (experimental)</div>'
+    + '</div>';
+
+  if(state.mode === 'auto'){
+    html += '<div class="auto-note">Funciona melhor com fundo parado e só o aluno se movendo. Arraste as linhas verdes até alinhar com os dois pontos marcados no chão.</div>';
+  }
+
+  html += '<div class="cam-wrap" id="camWrap">'
+    + '<video id="camVideo" playsinline muted></video>'
+    + '<canvas id="camCanvas" style="display:none;"></canvas>'
+    + '<div class="cam-off" id="camOff">Ligando câmera…</div>'
+    + (state.mode==='auto' ? gateLineHtml('gateLineA','Largada', state.gateAx) + gateLineHtml('gateLineB','Chegada', state.gateBx) : '')
+    + '</div>';
+
+  var distValid = state.lastDistance && parseFloat(state.lastDistance) > 0;
+
+  if(state.lastResult){
+    var r = state.lastResult;
+    html += '<div class="result-card"><div class="result-value">'+r.velocidadeKmh.toFixed(1).replace('.',',')+'</div>'
+      + '<div class="result-unit">km/h · '+r.tempoS.toFixed(2).replace('.',',')+'s em '+r.distanciaM+'m</div>'
+      + '<div class="result-sub">'+(r.metodo==='auto'?'detecção automática':'cronômetro manual')+'</div></div>';
+    html += '<button class="btn btn-primary" onclick="salvarResultado()">Salvar no histórico</button>';
+    html += '<div class="row-gap"><button class="btn btn-secondary" onclick="resetRun()">Nova corrida</button></div>';
+  } else {
+    html += '<div class="stopwatch-card">'
+      + '<div class="stopwatch-status">'+(state.phase==='aguardando_largada'?'Pronto pra largada':'Corrida em andamento')+'</div>'
+      + '<div class="stopwatch-time" id="swTime">'+(state.phase==='aguardando_chegada'?'0.00s':'—')+'</div>'
+      + '</div>';
+    if(state.mode === 'manual'){
+      if(state.phase === 'aguardando_largada'){
+        html += '<button class="gate-btn largada" '+(distValid?'':'disabled')+' onclick="onGateTriggered(\'largada\',\'manual\')">🏁 Toque quando o aluno SAIR</button>';
+      } else {
+        html += '<button class="gate-btn chegada" onclick="onGateTriggered(\'chegada\',\'manual\')">🏁 Toque quando o aluno CHEGAR</button>';
+      }
+    } else {
+      html += '<div class="auto-note">'+(distValid ? (state.phase==='aguardando_largada' ? 'Aguardando o aluno passar pela linha de largada…' : 'Aguardando o aluno passar pela linha de chegada…') : 'Informe a distância acima antes de começar.')+'</div>';
+    }
+  }
+
+  main.innerHTML = html;
+  if(!document.getElementById('camVideo').srcObject) startCamera();
+  if(state.mode === 'auto' && !state.rafId && state.stream) startAutoLoop();
+  setupGateDrag();
+}
+function gateLineHtml(id, label, xPct){
+  return '<div class="gate-line" id="'+id+'" style="left:'+xPct+'%;" data-x="'+xPct+'">'
+    + '<div class="grab"></div><div class="tag">'+label+'</div></div>';
+}
+function setupGateDrag(){
+  ['gateLineA','gateLineB'].forEach(function(id, idx){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var wrap = document.getElementById('camWrap');
+    function move(clientX){
+      var rect = wrap.getBoundingClientRect();
+      var pct = Math.max(4, Math.min(96, ((clientX-rect.left)/rect.width)*100));
+      el.style.left = pct+'%';
+      if(idx===0) state.gateAx = pct; else state.gateBx = pct;
+    }
+    el.addEventListener('touchstart', function(e){ e.stopPropagation(); }, {passive:true});
+    el.addEventListener('touchmove', function(e){ e.preventDefault(); move(e.touches[0].clientX); }, {passive:false});
+    el.addEventListener('mousedown', function(e){
+      function onMove(ev){ move(ev.clientX); }
+      function onUp(){ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+window.onDistChange = function(v){ state.lastDistance = v; };
+window.setMode = function(m){
+  state.mode = m;
+  state.phase = 'aguardando_largada';
+  state.tStart = null; state.tEnd = null; state.lastResult = null;
+  render();
+};
+window.onGateTriggered = onGateTriggered;
+window.resetRun = resetRun;
+window.salvarResultado = function(){
+  var s = getStudent(state.currentStudentId);
+  if(!s || !state.lastResult) return;
+  salvarMedicao(s, state.lastResult);
+  resetRun();
+};
+
+function openHistorico(){ state.screen = 'historico'; render(); }
+window.openHistorico = openHistorico;
+
+function renderHistorico(main){
+  var s = getStudent(state.currentStudentId);
+  if(!s){ state.screen = 'home'; return render(); }
+  setHeader(s.name.split(' ')[0], 'Histórico de velocidade', true);
+  var meds = s.medicoes.slice().reverse();
+  var html = '';
+  if(!meds.length){
+    html = '<div class="empty-state">Nenhuma medição salva ainda.</div>';
+  } else {
+    var best = meds.reduce(function(m,x){ return x.velocidadeKmh > m ? x.velocidadeKmh : m; }, 0);
+    html += '<div class="section-label">'+meds.length+' medição(ões)</div>';
+    meds.forEach(function(m){
+      html += '<div class="history-item"><div><div class="v'+(m.velocidadeKmh===best?' history-best':'')+'">'+m.velocidadeKmh.toFixed(1).replace('.',',')+' km/h</div>'
+        + '<div class="d">'+m.distanciaM+'m em '+m.tempoS.toFixed(2).replace('.',',')+'s</div></div>'
+        + '<div class="d">'+fmtDate(m.criadoEm)+'</div></div>';
+    });
+  }
+  main.innerHTML = html;
+}
+
+initFirebase();
+setTimeout(function(){ if(state.screen==='loading') boot(); }, 3000);
+})();
+</script>
+</body>
+</html>
