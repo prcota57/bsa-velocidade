@@ -1,6 +1,6 @@
 // Service Worker do BSA bsa-velocidade — guarda o app em cache para funcionar sem internet.
 // Só busca conteúdo novo quando o usuário toca em "Atualizar" no BSA APP (Hub).
-var CACHE_NAME = 'bsa-bsa-velocidade-cache-v1';
+var CACHE_NAME = 'bsa-bsa-velocidade-cache-v2';
 var PREFIX = 'bsa-bsa-velocidade-cache-';
 var FILES = ['index.html'];
 
@@ -32,7 +32,10 @@ self.addEventListener('fetch', function(event) {
         var copy = resp.clone();
         caches.open(CACHE_NAME).then(function(cache) { cache.put(event.request, copy); });
         return resp;
-      }).catch(function() { return cached; });
+      }).catch(function() {
+        if (event.request.mode === 'navigate') return caches.match('index.html');
+        return cached;
+      });
     })
   );
 });
