@@ -367,9 +367,9 @@ function resetRun(){
 
 /* ---------- render ---------- */
 function goBack(){
-  if(state.screen === 'medir'){ stopCamera(); state.screen = 'home'; state.currentStudentId = null; }
-  else if(state.screen === 'historico'){ state.screen = 'medir'; }
-  render();
+  if(state.screen === 'medir'){ stopCamera(); state.screen = 'home'; state.currentStudentId = null; render(); }
+  else if(state.screen === 'historico'){ state.screen = 'medir'; render(); }
+  else { exitOrBack(); }
 }
 function setHeader(title, sub, showBack){
   document.getElementById('headerTitle').textContent = title;
@@ -394,7 +394,7 @@ function render(){
 }
 
 function renderHome(main){
-  setHeader('BSA Velocidade','Escolha o aluno para medir', false);
+  setHeader('BSA Velocidade','Escolha o aluno para medir', true);
   var q = (document.getElementById('searchInput') && document.getElementById('searchInput').value || '').toLowerCase();
   var list = state.students.filter(function(s){ return !q || s.name.toLowerCase().indexOf(q) > -1; });
   var html = '<div class="search-wrap"><input id="searchInput" type="text" placeholder="Buscar aluno…" oninput="renderHome(document.getElementById(\'main\'))" value="'+escapeHtml(document.getElementById('searchInput')?document.getElementById('searchInput').value:'')+'"></div>';
@@ -568,6 +568,7 @@ function exitOrBack(){
   setTimeout(function(){
     if(state.screen !== 'home'){ goBack(); }
     else if(window.history.length > 1){ window.history.back(); }
+    else { window.location.href = 'https://prcota57.github.io/BSA-cadastro/'; }
   }, 400);
 }
 document.addEventListener('pointerdown', function(e){
